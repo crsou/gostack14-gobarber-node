@@ -1,23 +1,40 @@
 import { Router } from 'express';
-import { v4 } from 'uuid';
-import { startOfHour, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
+import AppointmentsRepository from '../repositories/AppointmentsRepository';
+import CreateAppointmentService from '../services/CreateAppointmentService';
 
+const appointmentsRepository = new AppointmentsRepository();
 const appointmentsRouter = Router();
 
-const appointments = [];
+// SoC: Separation of Concerns
+// DTO: Data Transfer Object
+// Rota: Receber requisição, chamar outro arquivo e devolver resposta (nada mais)
+
+appointmentsRouter.get('/', (request, response) => {
+  const appointments = appointmentsRepository.all();
+
+  return response.json(appointments);
+});
 
 appointmentsRouter.post('/', (request, response) => {
-  const { provider, date } = request.body;
+  try {
+    const { provider, date } = request.body;
 
-  const appointment = {
-    id: v4(),
-    provider,
-    date,
-  };
+    const parsedDate = parseISO(date);
 
-  appointments.push(appointment);
+    const createAppointment = new CreateAppointmentService(
+      appointmentsRepository,
+    );
 
-  response.json(appointment);
+    const appointment = createAppointment.execute({
+      provider,
+      date: parsedDate,
+    });
+
+    return response.json(appointment);
+  } catch (err) {
+    return response.status(400).json({ error: err.message });
+  }
 });
 
 export default appointmentsRouter;
