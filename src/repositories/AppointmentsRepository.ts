@@ -1,37 +1,44 @@
-import { isEqual } from 'date-fns';
+// import { isEqual } from 'date-fns';
+import { EntityRepository, Repository } from 'typeorm';
+
 import Appointment from '../models/Appointment';
 
-interface CreateAppointmentDTO {
-  provider: string;
-  date: Date;
-}
+// interface CreateAppointmentDTO {
+//   provider: string;
+//   date: Date;
+// }
 
-class AppointmentsRepository {
-  private appointments: Appointment[];
+@EntityRepository(Appointment)
+class AppointmentsRepository extends Repository<Appointment> {
+  // commented code is not needed anymore because typeorm will do it now.
+  // private appointments: Appointment[];
 
-  constructor() {
-    this.appointments = [];
-  }
+  // constructor() {
+  //   this.appointments = [];
+  // }
 
-  public all(): Appointment[] {
-    return this.appointments;
-  }
+  // public all(): Appointment[] {
+  //   return this.appointments;
+  // }
 
-  public findByDate(date: Date): Appointment | null {
-    const findAppointment = this.appointments.find(appointment =>
-      isEqual(date, appointment.date),
-    );
+  public async findByDate(date: Date): Promise<Appointment | null> {
+    // const findAppointment = this.appointments.find(appointment =>
+    //   isEqual(date, appointment.date),
+    // );
+    const findAppointment = await this.findOne({
+      where: { date }, // means {date: date}
+    });
 
     return findAppointment || null;
   }
 
-  public create({ provider, date }: CreateAppointmentDTO): Appointment {
-    const appointment = new Appointment({ provider, date });
+  // public create({ provider, date }: CreateAppointmentDTO): Appointment {
+  //   const appointment = new Appointment({ provider, date });
 
-    this.appointments.push(appointment);
+  //   this.appointments.push(appointment);
 
-    return appointment;
-  }
+  //   return appointment;
+  // }
 }
 
 export default AppointmentsRepository;
